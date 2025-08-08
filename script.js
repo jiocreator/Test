@@ -23,9 +23,12 @@ const appState = {
     CHANNELS_PER_LOAD: 20
 };
 
-const playlistUrls = [ "index.m3u", "quran-bangla.m3u", "videos.m3u", "movies.m3u" ];
+const playlistUrls = [
+    "index.m3u"
+    "videos.m3u
+                     ];
 
-// --- Lazy Loading Images (Intersection Observer) ---
+// --- Lazy Loading Images ---
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -84,19 +87,19 @@ function setupInitialView() {
     if (selectedGroup === "Favorites") {
         channelsToSort = getFavorites();
     } else {
-        channelsToSort = [...appState.allChannels]; // মূল অ্যারে ঠিক রাখার জন্য একটি কপি তৈরি করা হলো
+        channelsToSort = [...appState.allChannels];
     }
     
     // --- সর্টিং লজিক পরিবর্তন করা হলো ---
     const sortOrder = sortSelector.value;
-    if (sortOrder === 'az') {
+    if (sortOrder === 'newest') {
+        channelsToSort.reverse(); // Newest (reverse of original)
+    } else if (sortOrder === 'az') {
         channelsToSort.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOrder === 'za') {
         channelsToSort.sort((a, b) => b.name.localeCompare(a.name));
-    } else if (sortOrder === 'default') {
-        // 'Default' অপশনে নতুন আইটেমগুলো আগে দেখানোর জন্য অ্যারে রিভার্স করা হলো
-        channelsToSort.reverse();
     }
+    // "default" অপশনের জন্য কোনো কিছু করার দরকার নেই, কারণ এটিই স্বাভাবিক ক্রম
     // ------------------------------------
 
     const search = searchInput.value.toLowerCase();
@@ -167,6 +170,7 @@ function playStream(channel, index) {
     }
 }
 
+// --- UI & Helper Functions ---
 function renderQualitySelector(levels) {
     qualitySelector.innerHTML = "";
     if (!levels || levels.length === 0) return;
@@ -210,6 +214,7 @@ function showToast(message) {
     setTimeout(() => toastNotification.classList.remove('show'), 2500);
 }
 
+// --- Favorite System ---
 function getFavorites() { return JSON.parse(localStorage.getItem('myFavoriteChannels')) || []; }
 function saveFavorites(favorites) { localStorage.setItem('myFavoriteChannels', JSON.stringify(favorites)); }
 function toggleFavorite(channel) {
@@ -226,6 +231,7 @@ function toggleFavorite(channel) {
     if (categoryFilter.value === 'Favorites') setupInitialView();
 }
 
+// --- Autoplay Next ---
 function playNextVideo() {
     if (appState.currentFilteredChannels.length < 2) return;
     const currentItem = appState.allChannels[appState.currentChannelIndex];
