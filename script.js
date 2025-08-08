@@ -3,52 +3,34 @@ const channelList = document.getElementById("channelList");
 const searchInput = document.getElementById("search");
 const categoryFilter = document.getElementById("categoryFilter");
 const qualitySelector = document.getElementById("qualitySelector");
-// --- নতুন বাটনগুলো সিলেক্ট করা ---
 const listViewBtn = document.getElementById("listViewBtn");
 const gridViewBtn = document.getElementById("gridViewBtn");
+const sortSelector = document.getElementById("sortSelector"); // নতুন সর্ট মেনু
 
 let allChannels = [];
 let hls;
 
-// --- আগের সব ভ্যারিয়েবল অপরিবর্তিত ---
 const CHANNELS_PER_LOAD = 20;
 let currentFilteredChannels = [];
 let pageToLoad = 1;
 let isLoading = false;
 let currentChannelIndex = -1;
 
-// --- নতুন ভিউ টগল ফাংশন ---
 function setView(view) {
-    if (view === 'grid') {
-        channelList.classList.remove('list-view');
-        channelList.classList.add('grid-view');
-        gridViewBtn.classList.add('active');
-        listViewBtn.classList.remove('active');
-    } else {
-        channelList.classList.remove('grid-view');
-        channelList.classList.add('list-view');
-        listViewBtn.classList.add('active');
-        gridViewBtn.classList.remove('active');
-    }
-    // ইউজারের পছন্দ মনে রাখার জন্য localStorage এ সেভ করা
+    channelList.className = view === 'grid' ? 'grid-view' : 'list-view';
+    gridViewBtn.classList.toggle('active', view === 'grid');
+    listViewBtn.classList.toggle('active', view !== 'grid');
     localStorage.setItem('preferredView', view);
 }
 
-// বাটন ক্লিকে ভিউ পরিবর্তন
 listViewBtn.addEventListener('click', () => setView('list'));
 gridViewBtn.addEventListener('click', () => setView('grid'));
 
-
-// --- পেজ লোড হওয়ার সময় আগের পছন্দ অনুযায়ী ভিউ সেট করা ---
 document.addEventListener('DOMContentLoaded', () => {
-    const preferredView = localStorage.getItem('preferredView') || 'list'; // ডিফল্ট 'list'
+    const preferredView = localStorage.getItem('preferredView') || 'list';
     setView(preferredView);
     loadPlaylist();
 });
-
-
-// আগের সব ফাংশন প্রায় অপরিবর্তিত থাকবে...
-// শুধুমাত্র loadMoreChannels এ channel-name ক্লাস যোগ করতে হবে
 
 async function loadPlaylist() {
   try {
@@ -97,37 +79,47 @@ function populateCategories() {
   });
 }
 
+// --- setupInitialView ফাংশনে সর্টিং লজিক যোগ করা হয়েছে ---
 function setupInitialView() {
-    const search = searchInput.value.toLowerCase();
+    let channelsToSort = [];
     const selectedGroup = categoryFilter.value;
 
+    // ক্যাটাগরি অনুযায়ী ফিল্টার
     if (selectedGroup === "Favorites") {
-        currentFilteredChannels = getFavorites().filter(ch => ch.name.toLowerCase().includes(search));
+        channelsToSort = getFavorites();
     } else {
-        currentFilteredChannels = allChannels.filter(ch => 
-            ch.name.toLowerCase().includes(search) &&
-            (selectedGroup === "" || ch.group === selectedGroup)
-        );
+        channelsToSort = allChannels.filter(ch => selectedGroup === "" || ch.group === selectedGroup);
     }
+    
+    // সর্টিং প্রয়োগ
+    const sortOrder = sortSelector.value;
+    if (sortOrder === 'az') {
+        channelsToSort.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortOrder === 'za') {
+        channelsToSort.sort((a, b) => b.name.localeCompare(a.name));
+    }
+
+    // সার্চ টেক্সট প্রয়োগ
+    const search = searchInput.value.toLowerCase();
+    currentFilteredChannels = channelsToSort.filter(ch => ch.name.toLowerCase().includes(search));
+    
+    // ভিউ রিসেট এবং লোড
     channelList.innerHTML = "";
     pageToLoad = 1;
     loadMoreChannels();
 }
 
+
 function loadMoreChannels() {
     if (isLoading) return;
     isLoading = true;
-
     const startIndex = (pageToLoad - 1) * CHANNELS_PER_LOAD;
-    const endIndex = startIndex + CHANNELS_PER_LOAD;
-    const channelsToRender = currentFilteredChannels.slice(startIndex, endIndex);
-
+    const channelsToRender = currentFilteredChannels.slice(startIndex, startIndex + CHANNELS_PER_LOAD);
     if (channelsToRender.length === 0 && pageToLoad === 1) {
         channelList.innerHTML = `<div style="padding: 20px;">Not found.</div>`;
     }
-
     channelsToRender.forEach((ch, localIndex) => {
-        const globalIndex = startIndex + localIndex;
+        const globalIndex = allChannels.findIndex(c => c.name === ch.name && c.url === ch.url); // Use a more reliable index
         const div = document.createElement("div");
         div.className = "channel";
         div.dataset.index = globalIndex;
@@ -138,7 +130,7 @@ function loadMoreChannels() {
         img.onerror = () => { img.src = "https://via.placeholder.com/50"; };
 
         const nameSpan = document.createElement("span");
-        nameSpan.className = "channel-name"; // স্টাইল করার সুবিধার জন্য ক্লাস যোগ করা হলো
+        nameSpan.className = "channel-name";
         nameSpan.textContent = ch.name;
         
         const favoriteBtn = document.createElement("span");
@@ -164,7 +156,6 @@ channelList.addEventListener('scroll', () => {
     }
 });
 
-// আগের মতোই অন্যান্য সব ফাংশন... (playStream, playNextVideo, favorite functions etc.)
 
 function playStream(channel, index) {
   currentChannelIndex = index;
@@ -200,16 +191,7 @@ function playStream(channel, index) {
   }
 }
 
-function playNextVideo() {
-  if (currentFilteredChannels.length === 0 || currentChannelIndex === -1) return;
-  const nextIndex = (currentChannelIndex + 1) % currentFilteredChannels.length;
-  const nextChannel = currentFilteredChannels[nextIndex];
-  if (!document.querySelector(`.channel[data-index="${nextIndex}"]`)) {
-    loadMoreChannels();
-  }
-  playStream(nextChannel, nextIndex);
-}
-
+// Favorite and Autoplay functions remain the same
 function getFavorites() { return JSON.parse(localStorage.getItem('myFavoriteChannels')) || []; }
 function saveFavorites(favorites) { localStorage.setItem('myFavoriteChannels', JSON.stringify(favorites)); }
 function toggleFavorite(event, channel, starIcon) {
@@ -226,9 +208,22 @@ function toggleFavorite(event, channel, starIcon) {
     saveFavorites(favorites);
     if (categoryFilter.value === 'Favorites') setupInitialView();
 }
+function playNextVideo() {
+  if (currentFilteredChannels.length === 0 || currentChannelIndex === -1) return;
+  // This logic needs to be smarter - find index in currentFilteredChannels
+  const currentChannel = allChannels[currentChannelIndex];
+  const currentFilteredIndex = currentFilteredChannels.findIndex(c => c.url === currentChannel.url);
+  const nextFilteredIndex = (currentFilteredIndex + 1) % currentFilteredChannels.length;
+  const nextChannel = currentFilteredChannels[nextFilteredIndex];
+  const nextGlobalIndex = allChannels.findIndex(c => c.url === nextChannel.url);
+  
+  if (!document.querySelector(`.channel[data-index="${nextGlobalIndex}"]`)) {
+    loadMoreChannels();
+  }
+  playStream(nextChannel, nextGlobalIndex);
+}
 
 video.addEventListener('ended', playNextVideo);
 searchInput.addEventListener("input", setupInitialView);
 categoryFilter.addEventListener("change", setupInitialView);
-
-// loadPlaylist() এখন DOMContentLoaded এর ভেতর থেকে কল হবে
+sortSelector.addEventListener("change", setupInitialView); // Event listener for sort
