@@ -23,9 +23,13 @@ const appState = {
     CHANNELS_PER_LOAD: 20
 };
 
-const playlistUrls = [ "index.m3u" "videos.m3u" ];
+const playlistUrls = [
+    "https://cdn.jsdelivr.net/gh/jiocreator/streaming@main/streams/channels.m3u",
+    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/quran-bangla.m3u",
+    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/vod.m3u",
+    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/..m3u"
+];
 
-// --- Lazy Loading Images ---
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -37,7 +41,6 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     });
 });
 
-// --- Core Functions ---
 async function loadAllPlaylists() {
     channelList.innerHTML = '⏳ Loading...';
     try {
@@ -87,16 +90,15 @@ function setupInitialView() {
         channelsToSort = [...appState.allChannels];
     }
     
-    // --- সর্টিং লজিক পরিবর্তন করা হলো ---
+    // --- সর্টিং লজিক পরিবর্তন এখানে ---
     const sortOrder = sortSelector.value;
     if (sortOrder === 'newest') {
-        channelsToSort.reverse(); // Newest (reverse of original)
+        channelsToSort.reverse();
     } else if (sortOrder === 'az') {
         channelsToSort.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOrder === 'za') {
         channelsToSort.sort((a, b) => b.name.localeCompare(a.name));
     }
-    // "default" অপশনের জন্য কোনো কিছু করার দরকার নেই, কারণ এটিই স্বাভাবিক ক্রম
     // ------------------------------------
 
     const search = searchInput.value.toLowerCase();
@@ -107,40 +109,32 @@ function setupInitialView() {
     loadMoreChannels();
 }
 
-
 function loadMoreChannels() {
     if (appState.isLoading) return;
     appState.isLoading = true;
     loadingSpinner.classList.remove('hidden');
-
     const startIndex = (appState.pageToLoad - 1) * appState.CHANNELS_PER_LOAD;
     const channelsToRender = appState.currentFilteredChannels.slice(startIndex, startIndex + appState.CHANNELS_PER_LOAD);
-    
     if (channelsToRender.length === 0 && appState.pageToLoad === 1) {
         channelList.innerHTML = `<div style="padding: 20px;">Not found.</div>`;
     }
-
     channelsToRender.forEach(ch => {
         const div = document.createElement("div");
         div.className = "channel";
         const globalIndex = appState.allChannels.findIndex(c => c.name === ch.name && c.url === ch.url);
         div.dataset.index = globalIndex;
-
         const img = document.createElement("img");
         img.dataset.src = ch.logo || "https://via.placeholder.com/50";
         img.classList.add("lazy");
         img.onerror = () => { img.src = "https://via.placeholder.com/50"; };
         lazyImageObserver.observe(img);
-
         const nameSpan = document.createElement("span");
         nameSpan.className = "channel-name";
         nameSpan.textContent = ch.name;
-        
         div.appendChild(img);
         div.appendChild(nameSpan);
         channelList.appendChild(div);
     });
-
     appState.pageToLoad++;
     appState.isLoading = false;
     loadingSpinner.classList.add('hidden');
@@ -167,7 +161,6 @@ function playStream(channel, index) {
     }
 }
 
-// --- UI & Helper Functions ---
 function renderQualitySelector(levels) {
     qualitySelector.innerHTML = "";
     if (!levels || levels.length === 0) return;
@@ -211,7 +204,6 @@ function showToast(message) {
     setTimeout(() => toastNotification.classList.remove('show'), 2500);
 }
 
-// --- Favorite System ---
 function getFavorites() { return JSON.parse(localStorage.getItem('myFavoriteChannels')) || []; }
 function saveFavorites(favorites) { localStorage.setItem('myFavoriteChannels', JSON.stringify(favorites)); }
 function toggleFavorite(channel) {
@@ -228,7 +220,6 @@ function toggleFavorite(channel) {
     if (categoryFilter.value === 'Favorites') setupInitialView();
 }
 
-// --- Autoplay Next ---
 function playNextVideo() {
     if (appState.currentFilteredChannels.length < 2) return;
     const currentItem = appState.allChannels[appState.currentChannelIndex];
@@ -243,7 +234,6 @@ function playNextVideo() {
     playStream(nextChannel, nextGlobalIndex);
 }
 
-// --- Event Listeners ---
 const startPress = (event) => {
     const channelDiv = event.target.closest('.channel');
     if (!channelDiv) return;
@@ -270,20 +260,17 @@ channelList.addEventListener('click', handleClick);
 channelList.addEventListener('touchstart', startPress);
 channelList.addEventListener('touchend', cancelPress);
 channelList.addEventListener('touchmove', cancelPress);
-
 channelList.addEventListener('scroll', () => {
     if (channelList.scrollTop + channelList.clientHeight >= channelList.scrollHeight - 200) {
         loadMoreChannels();
     }
 });
-
 video.addEventListener('ended', playNextVideo);
 searchInput.addEventListener("input", setupInitialView);
 categoryFilter.addEventListener("change", setupInitialView);
 sortSelector.addEventListener("change", setupInitialView);
 listViewBtn.addEventListener('click', () => setView('list'));
 gridViewBtn.addEventListener('click', () => setView('grid'));
-
 document.addEventListener('DOMContentLoaded', () => {
     const preferredView = localStorage.getItem('preferredView') || 'list';
     setView(preferredView);
