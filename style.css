@@ -1,0 +1,171 @@
+body {
+  background: #121212;
+  color: #eee;
+  font-family: sans-serif;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+video {
+  width: 100%;
+  max-width: 720px;
+  background: #000;
+  border-radius: 10px;
+  margin: 10px auto;
+  display: block;
+}
+
+.controls {
+  margin: 15px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 800px;
+}
+
+#search,
+#categoryFilter {
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #1f1f1f;
+  color: #eee;
+}
+
+/* --- নতুন ভিউ টগল বাটনের স্টাইল --- */
+.view-toggle button {
+    padding: 10px 15px;
+    border: 1px solid #444;
+    background-color: #1f1f1f;
+    color: #eee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.view-toggle button:first-child {
+    border-radius: 5px 0 0 5px;
+}
+.view-toggle button:last-child {
+    border-radius: 0 5px 5px 0;
+}
+.view-toggle button.active {
+    background-color: #007bff;
+}
+/* ---------------------------------- */
+
+
+#channelList {
+  border: 1px solid #333;
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 800px; /* গ্রিডের জন্য জায়গা বাড়ানো হলো */
+  max-height: 500px; /* উচ্চতা বাড়ানো হলো */
+  overflow-y: auto;
+  padding: 10px;
+}
+
+/* --- লিস্ট ভিউ স্টাইল (ডিফল্ট) --- */
+#channelList.list-view .channel {
+  background: #1f1f1f;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  margin: 10px;
+  text-align: left;
+}
+#channelList.list-view .channel img {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+}
+#channelList.list-view .channel .channel-name {
+    flex-grow: 1;
+}
+
+
+/* --- গ্রিড ভিউ স্টাইল --- */
+#channelList.grid-view {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+#channelList.grid-view .channel {
+    background-color: #1e1e1e;
+    flex-direction: column;
+    width: 150px; /* কার্ডের প্রস্থ */
+    padding: 8px;
+    text-align: center;
+}
+#channelList.grid-view .channel img {
+  width: 100%;
+  height: 85px; /* ছবির উচ্চতা */
+}
+#channelList.grid-view .channel .channel-name {
+    margin-top: 8px;
+    font-size: 0.9em;
+    /* লেখা বেশি বড় হলে ... দিয়ে দেখানোর জন্য */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+
+/* --- সাধারণ চ্যানেল স্টাইল --- */
+.channel {
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  border: 2px solid transparent;
+}
+.channel:hover {
+  transform: scale(1.05);
+  border-color: #007bff;
+}
+.channel.active {
+  border-color: lime;
+}
+.channel img {
+  border-radius: 6px;
+  object-fit: cover;
+  background: #333;
+}
+
+/* অন্যান্য স্টাইল... */
+#qualitySelector, .favorite-btn {
+    /* আগের কোড অনুযায়ী অপরিবর্তিত থাকবে */
+}
+
+/* Favorite Button Style from previous context */
+.favorite-btn {
+    font-size: 24px;
+    color: #555;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+    padding: 5px;
+}
+#channelList.grid-view .favorite-btn {
+    top: 15px; /* গ্রিড ভিউতে পজিশন ঠিক করা */
+    right: 15px;
+}
+
+.favorite-btn:hover {
+    transform: translateY(-50%) scale(1.2);
+}
+
+.favorite-btn.favorited {
+    color: #fdd835;
+}
