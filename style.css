@@ -32,7 +32,6 @@ body {
     margin: 0;
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
 }
-font-family: 'Pacifico', cursive;
 .support-banner {
     margin: 15px auto 0 auto;
     padding: 12px 25px;
@@ -148,3 +147,4 @@ video {
 }
 #loadingSpinner.hidden { display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
+font-family: 'Pacifico', cursive;
