@@ -11,9 +11,9 @@ body {
 .main-header { padding: 10px; margin-bottom: 15px; }
 .header-title-container { display: flex; justify-content: center; align-items: center; gap: 15px; }
 .header-icon { width: 30px; height: 30px; background: radial-gradient(circle, #b0b0b0, #666); border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
-.header-title { font-size: 2.2em; font-weight: 700; color: #f0f0f0; margin: 0; text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6); }
-.support-banner { margin: 15px auto 0 auto; padding: 12px 25px; background-color: #222; max-width: 300px; border-radius: 50px; border: 1px solid #444; }
-.support-banner a { color: #fdd835; font-weight: bold; text-decoration: none; font-size: 1.1em; }
+.header-title { font-size: 1.7em; font-weight: 700; color: #f0f0f0; margin: 0; text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6); }
+.support-banner { margin: 10px auto 0 auto; padding: 7px 20px; background-color: #222; max-width: 300px; border-radius: 50px; border: 1px solid #444; }
+.support-banner a { color: #fdd835; font-weight: bold; text-decoration: none; font-size: 0.9em; }
 
 /* Controls */
 .controls { margin: 15px auto; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px; max-width: 800px; }
