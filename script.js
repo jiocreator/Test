@@ -5,7 +5,7 @@ const categoryFilter = document.getElementById("categoryFilter");
 const qualitySelector = document.getElementById("qualitySelector");
 const listViewBtn = document.getElementById("listViewBtn");
 const gridViewBtn = document.getElementById("gridViewBtn");
-const sortSelector = document.getElementById("sortSelector"); // নতুন সর্ট মেনু
+const sortSelector = document.getElementById("sortSelector");
 
 let allChannels = [];
 let hls;
@@ -16,12 +16,15 @@ let pageToLoad = 1;
 let isLoading = false;
 let currentChannelIndex = -1;
 
-// একাধিক m3u ফাইলের লিস্ট
-const PLAYLIST_URLS = [
-  "index.m3u",
-  "sports.m3u",
-  "movies.m3u"
+// --- আপনার সব M3U ফাইলের লিঙ্ক এখানে যোগ করুন ---
+const playlistUrls = [
+    "index.m3u", // আপনার আগের ফাইল
+    "quran-bangla.m3u",
+    "videos.m3u",
+    "movies.m3u"
 ];
+// ---------------------------------------------------
+
 
 function setView(view) {
     channelList.className = view === 'grid' ? 'grid-view' : 'list-view';
@@ -36,36 +39,42 @@ gridViewBtn.addEventListener('click', () => setView('grid'));
 document.addEventListener('DOMContentLoaded', () => {
     const preferredView = localStorage.getItem('preferredView') || 'list';
     setView(preferredView);
-    loadPlaylist();
+    loadAllPlaylists(); // <-- পরিবর্তিত ফাংশন কল
 });
 
-async function loadPlaylist() {
-  try {
-    let mergedChannels = [];
+// --- একাধিক প্লেলিস্ট লোড করার জন্য নতুন ফাংশন ---
+async function loadAllPlaylists() {
+    channelList.innerHTML = '⏳ Loading all playlists...';
+    try {
+        const responses = await Promise.all(
+            playlistUrls.map(url => fetch(url).catch(e => console.error(`Failed to fetch ${url}`, e)))
+        );
 
-    // সবগুলো m3u ফাইল লোড
-    for (let url of PLAYLIST_URLS) {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`Failed to load playlist: ${url}`);
-      const text = await res.text();
-      const parsed = parseM3U(text);
-      mergedChannels = mergedChannels.concat(parsed);
+        const textPromises = responses.map(res => {
+            if (res && res.ok) return res.text();
+            return Promise.resolve("");
+        });
+        
+        const allTexts = await Promise.all(textPromises);
+
+        let combinedChannels = [];
+        allTexts.forEach(text => {
+            if (text) {
+                const channels = parseM3U(text);
+                combinedChannels = combinedChannels.concat(channels);
+            }
+        });
+        
+        allChannels = combinedChannels;
+        populateCategories();
+        setupInitialView();
+
+    } catch (error) {
+        channelList.innerHTML = `<div style="padding: 20px; color: red;">Error: Could not load playlists.</div>`;
+        console.error(error);
     }
-
-    // ডুপ্লিকেট বাদ (url অনুযায়ী)
-    allChannels = mergedChannels.filter(
-      (ch, index, self) =>
-        index === self.findIndex(c => c.url === ch.url)
-    );
-
-    populateCategories();
-    setupInitialView();
-
-  } catch (error) {
-    channelList.innerHTML = `<div style="padding: 20px;">Error loading playlist(s).</div>`;
-    console.error(error);
-  }
 }
+
 
 function parseM3U(data) {
   const lines = data.split("\n");
@@ -131,10 +140,12 @@ function loadMoreChannels() {
     isLoading = true;
     const startIndex = (pageToLoad - 1) * CHANNELS_PER_LOAD;
     const channelsToRender = currentFilteredChannels.slice(startIndex, startIndex + CHANNELS_PER_LOAD);
+    
     if (channelsToRender.length === 0 && pageToLoad === 1) {
         channelList.innerHTML = `<div style="padding: 20px;">Not found.</div>`;
     }
-    channelsToRender.forEach((ch) => {
+
+    channelsToRender.forEach((ch, localIndex) => {
         const globalIndex = allChannels.findIndex(c => c.name === ch.name && c.url === ch.url);
         const div = document.createElement("div");
         div.className = "channel";
@@ -224,11 +235,11 @@ function toggleFavorite(event, channel, starIcon) {
 }
 
 function playNextVideo() {
-  if (currentFilteredChannels.length === 0 || currentChannelIndex === -1) return;
-  const currentChannel = allChannels[currentChannelIndex];
-  const currentFilteredIndex = currentFilteredChannels.findIndex(c => c.url === currentChannel.url);
+  if (currentFilteredChannels.length === 0) return;
+  const currentFilteredIndex = currentFilteredChannels.findIndex(c => allChannels[currentChannelIndex] && c.url === allChannels[currentChannelIndex].url);
   const nextFilteredIndex = (currentFilteredIndex + 1) % currentFilteredChannels.length;
   const nextChannel = currentFilteredChannels[nextFilteredIndex];
+  if (!nextChannel) return;
   const nextGlobalIndex = allChannels.findIndex(c => c.url === nextChannel.url);
   
   if (!document.querySelector(`.channel[data-index="${nextGlobalIndex}"]`)) {
