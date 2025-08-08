@@ -23,10 +23,7 @@ const appState = {
     CHANNELS_PER_LOAD: 20
 };
 
-const playlistUrls = [
-    "index.m3u"
-    "videos.m3u
-                     ];
+const playlistUrls = [ "index.m3u" "videos.m3u" ];
 
 // --- Lazy Loading Images ---
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
