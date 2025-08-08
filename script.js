@@ -23,7 +23,7 @@ const appState = {
     CHANNELS_PER_LOAD: 20
 };
 
-// --- আপনার দেওয়া মাল্টিপল URL এখানে পুনরুদ্ধার করা হলো ---
+// --- Multiple M3u Links ---
 const playlistUrls = [
     "https://cdn.jsdelivr.net/gh/jiocreator/streaming@main/streams/channels.m3u",
     "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/quran-bangla.m3u",
