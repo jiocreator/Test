@@ -310,3 +310,20 @@ document.addEventListener('DOMContentLoaded', () => {
     setView(preferredView);
     loadAllPlaylists();
 });
+// --- টিভি রিমোটের Next/Previous বাটনের জন্য নতুন কোড ---
+
+document.addEventListener('keydown', (event) => {
+    // keydown ইভেন্টটি নিরীক্ষণ করা হচ্ছে
+
+    switch (event.key) {
+        case 'ArrowRight': // ডান দিকের অ্যারো বাটন (Next)
+        case 'MediaTrackNext': // রিমোটের সাধারণ Next বাটন
+            playNext();
+            break;
+
+        case 'ArrowLeft': // বাম দিকের অ্যারো বাটন (Previous)
+        case 'MediaTrackPrevious': // রিমোটের সাধারণ Previous বাটন
+            playPrevious();
+            break;
+    }
+});
