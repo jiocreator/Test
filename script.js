@@ -23,13 +23,9 @@ const appState = {
     CHANNELS_PER_LOAD: 20
 };
 
-const playlistUrls = [
-    "https://cdn.jsdelivr.net/gh/jiocreator/streaming@main/streams/channels.m3u",
-    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/quran-bangla.m3u",
-    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/vod.m3u",
-    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/..m3u"
-];
+const playlistUrls = [ "index.m3u" ];
 
+// --- Lazy Loading Images ---
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -41,6 +37,7 @@ const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     });
 });
 
+// --- Core Functions ---
 async function loadAllPlaylists() {
     channelList.innerHTML = '⏳ Loading...';
     try {
@@ -81,60 +78,74 @@ function parseM3U(data) {
     return channels;
 }
 
+// --- setupInitialView ফাংশনটি ঠিক করা হলো ---
 function setupInitialView() {
-    let channelsToSort = [];
+    const search = searchInput.value.toLowerCase();
     const selectedGroup = categoryFilter.value;
+    let filteredChannels;
+
+    // ধাপ ১: ক্যাটাগরি এবং সার্চ অনুযায়ী ফিল্টার করা
     if (selectedGroup === "Favorites") {
-        channelsToSort = getFavorites();
+        filteredChannels = getFavorites().filter(ch => ch.name.toLowerCase().includes(search));
     } else {
-        channelsToSort = [...appState.allChannels];
+        filteredChannels = appState.allChannels.filter(ch => 
+            (selectedGroup === "" || ch.group === selectedGroup) && 
+            ch.name.toLowerCase().includes(search)
+        );
     }
-    
-    // --- সর্টিং লজিক পরিবর্তন এখানে ---
+
+    // ধাপ ২: ফিল্টার করা লিস্টের উপর সর্টিং প্রয়োগ করা
     const sortOrder = sortSelector.value;
     if (sortOrder === 'newest') {
-        channelsToSort.reverse();
+        filteredChannels.reverse();
     } else if (sortOrder === 'az') {
-        channelsToSort.sort((a, b) => a.name.localeCompare(b.name));
+        filteredChannels.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOrder === 'za') {
-        channelsToSort.sort((a, b) => b.name.localeCompare(a.name));
+        filteredChannels.sort((a, b) => b.name.localeCompare(a.name));
     }
-    // ------------------------------------
 
-    const search = searchInput.value.toLowerCase();
-    appState.currentFilteredChannels = channelsToSort.filter(ch => ch.name.toLowerCase().includes(search));
+    appState.currentFilteredChannels = filteredChannels;
     
+    // ধাপ ৩: ভিউ রিসেট এবং চ্যানেল লোড করা
     channelList.innerHTML = "";
     appState.pageToLoad = 1;
     loadMoreChannels();
 }
 
+
 function loadMoreChannels() {
     if (appState.isLoading) return;
     appState.isLoading = true;
     loadingSpinner.classList.remove('hidden');
+
     const startIndex = (appState.pageToLoad - 1) * appState.CHANNELS_PER_LOAD;
     const channelsToRender = appState.currentFilteredChannels.slice(startIndex, startIndex + appState.CHANNELS_PER_LOAD);
+    
     if (channelsToRender.length === 0 && appState.pageToLoad === 1) {
         channelList.innerHTML = `<div style="padding: 20px;">Not found.</div>`;
     }
+
     channelsToRender.forEach(ch => {
         const div = document.createElement("div");
         div.className = "channel";
         const globalIndex = appState.allChannels.findIndex(c => c.name === ch.name && c.url === ch.url);
         div.dataset.index = globalIndex;
+
         const img = document.createElement("img");
         img.dataset.src = ch.logo || "https://via.placeholder.com/50";
         img.classList.add("lazy");
         img.onerror = () => { img.src = "https://via.placeholder.com/50"; };
         lazyImageObserver.observe(img);
+
         const nameSpan = document.createElement("span");
         nameSpan.className = "channel-name";
         nameSpan.textContent = ch.name;
+        
         div.appendChild(img);
         div.appendChild(nameSpan);
         channelList.appendChild(div);
     });
+
     appState.pageToLoad++;
     appState.isLoading = false;
     loadingSpinner.classList.add('hidden');
@@ -161,6 +172,7 @@ function playStream(channel, index) {
     }
 }
 
+// --- UI & Helper Functions ---
 function renderQualitySelector(levels) {
     qualitySelector.innerHTML = "";
     if (!levels || levels.length === 0) return;
@@ -204,6 +216,7 @@ function showToast(message) {
     setTimeout(() => toastNotification.classList.remove('show'), 2500);
 }
 
+// --- Favorite System ---
 function getFavorites() { return JSON.parse(localStorage.getItem('myFavoriteChannels')) || []; }
 function saveFavorites(favorites) { localStorage.setItem('myFavoriteChannels', JSON.stringify(favorites)); }
 function toggleFavorite(channel) {
@@ -220,6 +233,7 @@ function toggleFavorite(channel) {
     if (categoryFilter.value === 'Favorites') setupInitialView();
 }
 
+// --- Autoplay Next ---
 function playNextVideo() {
     if (appState.currentFilteredChannels.length < 2) return;
     const currentItem = appState.allChannels[appState.currentChannelIndex];
@@ -234,6 +248,7 @@ function playNextVideo() {
     playStream(nextChannel, nextGlobalIndex);
 }
 
+// --- Event Listeners ---
 const startPress = (event) => {
     const channelDiv = event.target.closest('.channel');
     if (!channelDiv) return;
@@ -260,17 +275,20 @@ channelList.addEventListener('click', handleClick);
 channelList.addEventListener('touchstart', startPress);
 channelList.addEventListener('touchend', cancelPress);
 channelList.addEventListener('touchmove', cancelPress);
+
 channelList.addEventListener('scroll', () => {
     if (channelList.scrollTop + channelList.clientHeight >= channelList.scrollHeight - 200) {
         loadMoreChannels();
     }
 });
+
 video.addEventListener('ended', playNextVideo);
 searchInput.addEventListener("input", setupInitialView);
 categoryFilter.addEventListener("change", setupInitialView);
 sortSelector.addEventListener("change", setupInitialView);
 listViewBtn.addEventListener('click', () => setView('list'));
 gridViewBtn.addEventListener('click', () => setView('grid'));
+
 document.addEventListener('DOMContentLoaded', () => {
     const preferredView = localStorage.getItem('preferredView') || 'list';
     setView(preferredView);
