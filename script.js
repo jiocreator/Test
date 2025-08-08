@@ -23,22 +23,14 @@ const appState = {
     CHANNELS_PER_LOAD: 20
 };
 
-// --- আপনার প্লেলিস্টের তালিকা পুনরুদ্ধার করা হলো ---
-const playlistUrls = [
-    "index.m3u",
-    "quran-bangla.m3u",
-    "videos.m3u",
-    "movies.m3u"
-];
+const playlistUrls = [ "index.m3u", "quran-bangla.m3u", "videos.m3u", "movies.m3u" ];
 
 // --- Lazy Loading Images (Intersection Observer) ---
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             const img = entry.target;
-            if (img.dataset.src) {
-                img.src = img.dataset.src;
-            }
+            if (img.dataset.src) img.src = img.dataset.src;
             img.classList.remove("lazy");
             observer.unobserve(img);
         }
@@ -92,17 +84,29 @@ function setupInitialView() {
     if (selectedGroup === "Favorites") {
         channelsToSort = getFavorites();
     } else {
-        channelsToSort = appState.allChannels.filter(ch => selectedGroup === "" || ch.group === selectedGroup);
+        channelsToSort = [...appState.allChannels]; // মূল অ্যারে ঠিক রাখার জন্য একটি কপি তৈরি করা হলো
     }
+    
+    // --- সর্টিং লজিক পরিবর্তন করা হলো ---
     const sortOrder = sortSelector.value;
-    if (sortOrder === 'az') channelsToSort.sort((a, b) => a.name.localeCompare(b.name));
-    else if (sortOrder === 'za') channelsToSort.sort((a, b) => b.name.localeCompare(a.name));
+    if (sortOrder === 'az') {
+        channelsToSort.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortOrder === 'za') {
+        channelsToSort.sort((a, b) => b.name.localeCompare(a.name));
+    } else if (sortOrder === 'default') {
+        // 'Default' অপশনে নতুন আইটেমগুলো আগে দেখানোর জন্য অ্যারে রিভার্স করা হলো
+        channelsToSort.reverse();
+    }
+    // ------------------------------------
+
     const search = searchInput.value.toLowerCase();
     appState.currentFilteredChannels = channelsToSort.filter(ch => ch.name.toLowerCase().includes(search));
+    
     channelList.innerHTML = "";
     appState.pageToLoad = 1;
     loadMoreChannels();
 }
+
 
 function loadMoreChannels() {
     if (appState.isLoading) return;
@@ -111,9 +115,11 @@ function loadMoreChannels() {
 
     const startIndex = (appState.pageToLoad - 1) * appState.CHANNELS_PER_LOAD;
     const channelsToRender = appState.currentFilteredChannels.slice(startIndex, startIndex + appState.CHANNELS_PER_LOAD);
+    
     if (channelsToRender.length === 0 && appState.pageToLoad === 1) {
         channelList.innerHTML = `<div style="padding: 20px;">Not found.</div>`;
     }
+
     channelsToRender.forEach(ch => {
         const div = document.createElement("div");
         div.className = "channel";
@@ -161,7 +167,6 @@ function playStream(channel, index) {
     }
 }
 
-// --- UI & Helper Functions ---
 function renderQualitySelector(levels) {
     qualitySelector.innerHTML = "";
     if (!levels || levels.length === 0) return;
@@ -205,7 +210,6 @@ function showToast(message) {
     setTimeout(() => toastNotification.classList.remove('show'), 2500);
 }
 
-// --- Favorite System ---
 function getFavorites() { return JSON.parse(localStorage.getItem('myFavoriteChannels')) || []; }
 function saveFavorites(favorites) { localStorage.setItem('myFavoriteChannels', JSON.stringify(favorites)); }
 function toggleFavorite(channel) {
@@ -222,7 +226,6 @@ function toggleFavorite(channel) {
     if (categoryFilter.value === 'Favorites') setupInitialView();
 }
 
-// --- Autoplay Next ---
 function playNextVideo() {
     if (appState.currentFilteredChannels.length < 2) return;
     const currentItem = appState.allChannels[appState.currentChannelIndex];
@@ -246,13 +249,9 @@ const startPress = (event) => {
         appState.isLongPress = true;
         const channel = appState.allChannels[channelDiv.dataset.index];
         if (channel) toggleFavorite(channel);
-    }, 1500); // 1.5 second hold
+    }, 1500);
 };
-
-const cancelPress = () => {
-    clearTimeout(appState.pressTimer);
-};
-
+const cancelPress = () => clearTimeout(appState.pressTimer);
 const handleClick = (event) => {
     const channelDiv = event.target.closest('.channel');
     if (channelDiv && !appState.isLongPress) {
@@ -261,17 +260,13 @@ const handleClick = (event) => {
     }
 };
 
-// Mouse Events
 channelList.addEventListener('mousedown', startPress);
 channelList.addEventListener('mouseup', cancelPress);
-channelList.addEventListener('mouseleave', cancelPress); // মাউস বাইরে গেলে লং-প্রেস ক্যানসেল
+channelList.addEventListener('mouseleave', cancelPress);
 channelList.addEventListener('click', handleClick);
-
-// Touch Events for Mobile
 channelList.addEventListener('touchstart', startPress);
 channelList.addEventListener('touchend', cancelPress);
-channelList.addEventListener('touchmove', cancelPress); // স্ক্রল করলে লং-প্রেস ক্যানসেল
-
+channelList.addEventListener('touchmove', cancelPress);
 
 channelList.addEventListener('scroll', () => {
     if (channelList.scrollTop + channelList.clientHeight >= channelList.scrollHeight - 200) {
