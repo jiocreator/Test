@@ -9,6 +9,8 @@ const gridViewBtn = document.getElementById("gridViewBtn");
 const sortSelector = document.getElementById("sortSelector");
 const toastNotification = document.getElementById("toastNotification");
 const loadingSpinner = document.getElementById("loadingSpinner");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
 
 // --- App State ---
 const appState = {
@@ -23,15 +25,14 @@ const appState = {
     CHANNELS_PER_LOAD: 20
 };
 
-// --- Multiple M3u Links ---
+// --- Your M3U Playlist URLs ---
 const playlistUrls = [
     "https://cdn.jsdelivr.net/gh/jiocreator/streaming@main/streams/channels.m3u",
     "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/quran-bangla.m3u",
-    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/vod.m3u",
-    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/..m3u"
+    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/vod.m3u"
 ];
 
-// --- Lazy Loading Images ---
+// --- Lazy Loading Images (Intersection Observer) ---
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -85,69 +86,50 @@ function parseM3U(data) {
 }
 
 function setupInitialView() {
-    const search = searchInput.value.toLowerCase();
+    let channelsToSort = [];
     const selectedGroup = categoryFilter.value;
-    let filteredChannels;
-
     if (selectedGroup === "Favorites") {
-        filteredChannels = getFavorites().filter(ch => ch.name.toLowerCase().includes(search));
+        channelsToSort = getFavorites();
     } else {
-        filteredChannels = appState.allChannels.filter(ch => 
-            (selectedGroup === "" || ch.group === selectedGroup) && 
-            ch.name.toLowerCase().includes(search)
-        );
+        channelsToSort = [...appState.allChannels];
     }
-
     const sortOrder = sortSelector.value;
-    if (sortOrder === 'newest') {
-        filteredChannels.reverse();
-    } else if (sortOrder === 'az') {
-        filteredChannels.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortOrder === 'za') {
-        filteredChannels.sort((a, b) => b.name.localeCompare(a.name));
-    }
-
-    appState.currentFilteredChannels = filteredChannels;
-    
+    if (sortOrder === 'newest') channelsToSort.reverse();
+    else if (sortOrder === 'az') channelsToSort.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sortOrder === 'za') channelsToSort.sort((a, b) => b.name.localeCompare(a.name));
+    const search = searchInput.value.toLowerCase();
+    appState.currentFilteredChannels = channelsToSort.filter(ch => ch.name.toLowerCase().includes(search));
     channelList.innerHTML = "";
     appState.pageToLoad = 1;
     loadMoreChannels();
 }
 
-
 function loadMoreChannels() {
     if (appState.isLoading) return;
     appState.isLoading = true;
     loadingSpinner.classList.remove('hidden');
-
     const startIndex = (appState.pageToLoad - 1) * appState.CHANNELS_PER_LOAD;
     const channelsToRender = appState.currentFilteredChannels.slice(startIndex, startIndex + appState.CHANNELS_PER_LOAD);
-    
     if (channelsToRender.length === 0 && appState.pageToLoad === 1) {
         channelList.innerHTML = `<div style="padding: 20px;">Not found.</div>`;
     }
-
     channelsToRender.forEach(ch => {
         const div = document.createElement("div");
         div.className = "channel";
         const globalIndex = appState.allChannels.findIndex(c => c.name === ch.name && c.url === ch.url);
         div.dataset.index = globalIndex;
-
         const img = document.createElement("img");
         img.dataset.src = ch.logo || "https://via.placeholder.com/50";
         img.classList.add("lazy");
         img.onerror = () => { img.src = "https://via.placeholder.com/50"; };
         lazyImageObserver.observe(img);
-
         const nameSpan = document.createElement("span");
         nameSpan.className = "channel-name";
         nameSpan.textContent = ch.name;
-        
         div.appendChild(img);
         div.appendChild(nameSpan);
         channelList.appendChild(div);
     });
-
     appState.pageToLoad++;
     appState.isLoading = false;
     loadingSpinner.classList.add('hidden');
@@ -174,7 +156,6 @@ function playStream(channel, index) {
     }
 }
 
-// --- UI & Helper Functions ---
 function renderQualitySelector(levels) {
     qualitySelector.innerHTML = "";
     if (!levels || levels.length === 0) return;
@@ -218,7 +199,6 @@ function showToast(message) {
     setTimeout(() => toastNotification.classList.remove('show'), 2500);
 }
 
-// --- Favorite System ---
 function getFavorites() { return JSON.parse(localStorage.getItem('myFavoriteChannels')) || []; }
 function saveFavorites(favorites) { localStorage.setItem('myFavoriteChannels', JSON.stringify(favorites)); }
 function toggleFavorite(channel) {
@@ -235,19 +215,36 @@ function toggleFavorite(channel) {
     if (categoryFilter.value === 'Favorites') setupInitialView();
 }
 
-// --- Autoplay Next ---
-function playNextVideo() {
-    if (appState.currentFilteredChannels.length < 2) return;
+// --- Navigation Functions ---
+function playNext() {
+    if (appState.currentFilteredChannels.length < 1) return;
     const currentItem = appState.allChannels[appState.currentChannelIndex];
-    if (!currentItem) return;
-    const currentIndexInFiltered = appState.currentFilteredChannels.findIndex(c => c.url === currentItem.url);
-    if (currentIndexInFiltered === -1) return;
+    let currentIndexInFiltered = -1;
+    if(currentItem) {
+        currentIndexInFiltered = appState.currentFilteredChannels.findIndex(c => c.url === currentItem.url);
+    }
     const nextIndexInFiltered = (currentIndexInFiltered + 1) % appState.currentFilteredChannels.length;
     const nextChannel = appState.currentFilteredChannels[nextIndexInFiltered];
     if (!nextChannel) return;
     const nextGlobalIndex = appState.allChannels.findIndex(c => c.url === nextChannel.url);
-    if (!document.querySelector(`.channel[data-index="${nextGlobalIndex}"]`)) loadMoreChannels();
+    if (nextGlobalIndex !== -1 && !document.querySelector(`.channel[data-index="${nextGlobalIndex}"]`)) loadMoreChannels();
     playStream(nextChannel, nextGlobalIndex);
+}
+
+function playPrevious() {
+    if (appState.currentFilteredChannels.length < 1) return;
+    const currentItem = appState.allChannels[appState.currentChannelIndex];
+    let currentIndexInFiltered = 0;
+     if(currentItem) {
+        currentIndexInFiltered = appState.currentFilteredChannels.findIndex(c => c.url === currentItem.url);
+    }
+    if (currentIndexInFiltered === -1) currentIndexInFiltered = 0;
+    let prevIndexInFiltered = currentIndexInFiltered - 1;
+    if (prevIndexInFiltered < 0) prevIndexInFiltered = appState.currentFilteredChannels.length - 1;
+    const prevChannel = appState.currentFilteredChannels[prevIndexInFiltered];
+    if (!prevChannel) return;
+    const prevGlobalIndex = appState.allChannels.findIndex(c => c.url === prevChannel.url);
+    playStream(prevChannel, prevGlobalIndex);
 }
 
 // --- Event Listeners ---
@@ -277,19 +274,19 @@ channelList.addEventListener('click', handleClick);
 channelList.addEventListener('touchstart', startPress);
 channelList.addEventListener('touchend', cancelPress);
 channelList.addEventListener('touchmove', cancelPress);
-
 channelList.addEventListener('scroll', () => {
     if (channelList.scrollTop + channelList.clientHeight >= channelList.scrollHeight - 200) {
         loadMoreChannels();
     }
 });
-
-video.addEventListener('ended', playNextVideo);
+video.addEventListener('ended', playNext);
 searchInput.addEventListener("input", setupInitialView);
 categoryFilter.addEventListener("change", setupInitialView);
 sortSelector.addEventListener("change", setupInitialView);
 listViewBtn.addEventListener('click', () => setView('list'));
 gridViewBtn.addEventListener('click', () => setView('grid'));
+prevBtn.addEventListener('click', playPrevious);
+nextBtn.addEventListener('click', playNext);
 
 document.addEventListener('DOMContentLoaded', () => {
     const preferredView = localStorage.getItem('preferredView') || 'list';
