@@ -23,7 +23,13 @@ const appState = {
     CHANNELS_PER_LOAD: 20
 };
 
-const playlistUrls = [ "index.m3u" ];
+// --- আপনার দেওয়া মাল্টিপল URL এখানে পুনরুদ্ধার করা হলো ---
+const playlistUrls = [
+    "https://cdn.jsdelivr.net/gh/jiocreator/streaming@main/streams/channels.m3u",
+    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/quran-bangla.m3u",
+    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/vod.m3u",
+    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/..m3u"
+];
 
 // --- Lazy Loading Images ---
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
@@ -78,13 +84,11 @@ function parseM3U(data) {
     return channels;
 }
 
-// --- setupInitialView ফাংশনটি ঠিক করা হলো ---
 function setupInitialView() {
     const search = searchInput.value.toLowerCase();
     const selectedGroup = categoryFilter.value;
     let filteredChannels;
 
-    // ধাপ ১: ক্যাটাগরি এবং সার্চ অনুযায়ী ফিল্টার করা
     if (selectedGroup === "Favorites") {
         filteredChannels = getFavorites().filter(ch => ch.name.toLowerCase().includes(search));
     } else {
@@ -94,7 +98,6 @@ function setupInitialView() {
         );
     }
 
-    // ধাপ ২: ফিল্টার করা লিস্টের উপর সর্টিং প্রয়োগ করা
     const sortOrder = sortSelector.value;
     if (sortOrder === 'newest') {
         filteredChannels.reverse();
@@ -106,7 +109,6 @@ function setupInitialView() {
 
     appState.currentFilteredChannels = filteredChannels;
     
-    // ধাপ ৩: ভিউ রিসেট এবং চ্যানেল লোড করা
     channelList.innerHTML = "";
     appState.pageToLoad = 1;
     loadMoreChannels();
