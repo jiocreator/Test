@@ -327,3 +327,18 @@ document.addEventListener('keydown', (event) => {
             break;
     }
 });
+// --- মাউসের অতিরিক্ত বাটনের জন্য নতুন কোড ---
+
+document.addEventListener('mouseup', (event) => {
+    // মাউসের কোন বাটন চাপা হয়েছে তা পরীক্ষা করা হচ্ছে
+
+    // event.button === 3 হলো মাউসের "Back" বাটন (সাধারণত সাইডের পেছনের বাটন)
+    if (event.button === 3) {
+        playPrevious();
+    }
+
+    // event.button === 4 হলো মাউসের "Forward" বাটন (সাধারণত সাইডের সামনের বাটন)
+    if (event.button === 4) {
+        playNext();
+    }
+});
