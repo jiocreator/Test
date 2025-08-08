@@ -25,7 +25,13 @@ const appState = {
     CHANNELS_PER_LOAD: 20
 };
 
-const playlistUrls = [ "index.m3u" ];
+// --- আপনার মাল্টিপল M3U প্লেলিস্টের URL পুনরুদ্ধার করা হলো ---
+const playlistUrls = [
+    "https://cdn.jsdelivr.net/gh/jiocreator/streaming@main/streams/channels.m3u",
+    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/quran-bangla.m3u",
+    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/vod.m3u",
+    "https://cdn.statically.io/gh/jiocreator/streaming/main/streams/..m3u"
+];
 
 // --- Lazy Loading Images ---
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
@@ -80,20 +86,41 @@ function parseM3U(data) {
     return channels;
 }
 
+// --- setupInitialView ফাংশনটি ঠিক করা হলো ---
 function setupInitialView() {
-    let channelsToSort = [];
-    const selectedGroup = categoryFilter.value;
-    if (selectedGroup === "Favorites") {
-        channelsToSort = getFavorites();
-    } else {
-        channelsToSort = [...appState.allChannels];
-    }
-    const sortOrder = sortSelector.value;
-    if (sortOrder === 'newest') channelsToSort.reverse();
-    else if (sortOrder === 'az') channelsToSort.sort((a, b) => a.name.localeCompare(b.name));
-    else if (sortOrder === 'za') channelsToSort.sort((a, b) => b.name.localeCompare(a.name));
     const search = searchInput.value.toLowerCase();
-    appState.currentFilteredChannels = channelsToSort.filter(ch => ch.name.toLowerCase().includes(search));
+    const selectedGroup = categoryFilter.value;
+    let filteredChannels;
+
+    // ধাপ ১: ক্যাটাগরি অনুযায়ী ফিল্টার
+    if (selectedGroup === "Favorites") {
+        filteredChannels = getFavorites();
+    } else {
+        filteredChannels = appState.allChannels.filter(ch => 
+            selectedGroup === "" || ch.group === selectedGroup
+        );
+    }
+
+    // ধাপ ২: সার্চ টেক্সট প্রয়োগ
+    if (search) {
+        filteredChannels = filteredChannels.filter(ch =>
+            ch.name.toLowerCase().includes(search)
+        );
+    }
+    
+    // ধাপ ৩: সর্টিং প্রয়োগ
+    const sortOrder = sortSelector.value;
+    if (sortOrder === 'newest') {
+        filteredChannels.reverse();
+    } else if (sortOrder === 'az') {
+        filteredChannels.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortOrder === 'za') {
+        filteredChannels.sort((a, b) => b.name.localeCompare(a.name));
+    }
+
+    appState.currentFilteredChannels = filteredChannels;
+    
+    // ধাপ ৪: ভিউ রিসেট এবং চ্যানেল লোড
     channelList.innerHTML = "";
     appState.pageToLoad = 1;
     loadMoreChannels();
@@ -152,7 +179,6 @@ function playStream(channel, index) {
     }
 }
 
-// --- UI & Helper Functions ---
 function renderQualitySelector(levels) {
     qualitySelector.innerHTML = "";
     if (!levels || levels.length === 0) return;
@@ -196,7 +222,6 @@ function showToast(message) {
     setTimeout(() => toastNotification.classList.remove('show'), 2500);
 }
 
-// --- Favorite System ---
 function getFavorites() { return JSON.parse(localStorage.getItem('myFavoriteChannels')) || []; }
 function saveFavorites(favorites) { localStorage.setItem('myFavoriteChannels', JSON.stringify(favorites)); }
 function toggleFavorite(channel) {
@@ -213,14 +238,11 @@ function toggleFavorite(channel) {
     if (categoryFilter.value === 'Favorites') setupInitialView();
 }
 
-// --- Navigation Functions (FIXED) ---
 function playNext() {
     if (appState.currentFilteredChannels.length < 1) return;
     const currentItem = appState.allChannels[appState.currentChannelIndex];
     let currentIndexInFiltered = -1;
-    if (currentItem) {
-        currentIndexInFiltered = appState.currentFilteredChannels.findIndex(c => c.url === currentItem.url);
-    }
+    if(currentItem) currentIndexInFiltered = appState.currentFilteredChannels.findIndex(c => c.url === currentItem.url);
     const nextIndexInFiltered = (currentIndexInFiltered + 1) % appState.currentFilteredChannels.length;
     const nextChannel = appState.currentFilteredChannels[nextIndexInFiltered];
     if (!nextChannel) return;
@@ -232,21 +254,17 @@ function playPrevious() {
     if (appState.currentFilteredChannels.length < 1) return;
     const currentItem = appState.allChannels[appState.currentChannelIndex];
     let currentIndexInFiltered = 0;
-    if (currentItem) {
-        currentIndexInFiltered = appState.currentFilteredChannels.findIndex(c => c.url === currentItem.url);
-    }
+    if(currentItem) currentIndexInFiltered = appState.currentFilteredChannels.findIndex(c => c.url === currentItem.url);
     if (currentIndexInFiltered === -1) currentIndexInFiltered = 0;
     let prevIndexInFiltered = currentIndexInFiltered - 1;
-    if (prevIndexInFiltered < 0) {
-        prevIndexInFiltered = appState.currentFilteredChannels.length - 1;
-    }
+    if (prevIndexInFiltered < 0) prevIndexInFiltered = appState.currentFilteredChannels.length - 1;
     const prevChannel = appState.currentFilteredChannels[prevIndexInFiltered];
     if (!prevChannel) return;
     const prevGlobalIndex = appState.allChannels.findIndex(c => c.url === prevChannel.url);
     if (prevGlobalIndex !== -1) playStream(prevChannel, prevGlobalIndex);
 }
 
-// --- Event Listeners ---
+// Event Listeners
 const startPress = (event) => {
     const channelDiv = event.target.closest('.channel');
     if (!channelDiv) return;
@@ -273,21 +291,19 @@ channelList.addEventListener('click', handleClick);
 channelList.addEventListener('touchstart', startPress);
 channelList.addEventListener('touchend', cancelPress);
 channelList.addEventListener('touchmove', cancelPress);
-
 channelList.addEventListener('scroll', () => {
     if (channelList.scrollTop + channelList.clientHeight >= channelList.scrollHeight - 200) {
         loadMoreChannels();
     }
 });
-
-video.addEventListener('ended', playNext); // Fixed
+video.addEventListener('ended', playNext);
 searchInput.addEventListener("input", setupInitialView);
 categoryFilter.addEventListener("change", setupInitialView);
 sortSelector.addEventListener("change", setupInitialView);
 listViewBtn.addEventListener('click', () => setView('list'));
 gridViewBtn.addEventListener('click', () => setView('grid'));
-prevBtn.addEventListener('click', playPrevious); // Fixed
-nextBtn.addEventListener('click', playNext); // Fixed
+prevBtn.addEventListener('click', playPrevious);
+nextBtn.addEventListener('click', playNext);
 
 document.addEventListener('DOMContentLoaded', () => {
     const preferredView = localStorage.getItem('preferredView') || 'list';
