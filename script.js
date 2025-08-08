@@ -21,6 +21,8 @@ const PLAYLIST_URLS = [
   "index.m3u",
   "sports.m3u",
   "movies.m3u"
+  "quran-bangla.m3u"
+"videos.m3u"
 ];
 
 function setView(view) {
