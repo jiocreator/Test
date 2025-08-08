@@ -24,12 +24,7 @@ const appState = {
 };
 
 // --- Add your M3U playlist URLs here ---
-const playlistUrls = [
-    "index.m3u",
-    "quran-bangla.m3u",
-    "videos.m3u",
-    "movies.m3u"
-];
+const playlistUrls = [ "index.m3u" ];
 
 // --- Lazy Loading Images (Intersection Observer) ---
 const lazyImageObserver = new IntersectionObserver((entries, observer) => {
@@ -236,17 +231,32 @@ function playNextVideo() {
 }
 
 // --- Event Listeners ---
+
+// লং-প্রেস নির্ভরযোগ্য করার জন্য mousemove ইভেন্ট যোগ করা হলো
+const cancelLongPress = () => clearTimeout(appState.pressTimer);
+
 channelList.addEventListener('mousedown', (e) => {
     const channelDiv = e.target.closest('.channel');
     if (!channelDiv) return;
+    
     appState.isLongPress = false;
     appState.pressTimer = setTimeout(() => {
         appState.isLongPress = true;
         const channel = appState.allChannels[channelDiv.dataset.index];
         if (channel) toggleFavorite(channel);
-    }, 1500);
+    }, 1500); // 1.5 সেকেন্ড
+    
+    channelDiv.addEventListener('mousemove', cancelLongPress, { once: true });
 });
-channelList.addEventListener('mouseup', () => clearTimeout(appState.pressTimer));
+
+channelList.addEventListener('mouseup', (e) => {
+    const channelDiv = e.target.closest('.channel');
+    if (channelDiv) {
+        channelDiv.removeEventListener('mousemove', cancelLongPress);
+    }
+    clearTimeout(appState.pressTimer);
+});
+
 channelList.addEventListener('click', (e) => {
     const channelDiv = e.target.closest('.channel');
     if (channelDiv && !appState.isLongPress) {
