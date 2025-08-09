@@ -42,6 +42,12 @@ body {
    ================================= */
 
 /* ===== Simple Header Styles ===== */
+:root {
+  --primary: #4361ee;
+  --accent: #4895ef;
+  --dark: #1a1a2e;
+  --darker: #0d0d1a;
+}
 
 .main-header {
   display: flex;
