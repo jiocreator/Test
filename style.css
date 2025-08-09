@@ -1,0 +1,408 @@
+/* =================================
+   CSS Variables for Theming
+   ================================= */
+:root {
+    --primary-color: #3a7bfd; /* একটি আকর্ষণীয় নীল রঙ */
+    --primary-color-hover: #2a62d0;
+    --background-color: #121212; /* ডার্ক ব্যাকগ্রাউন্ড */
+    --surface-color: #1e1e1e; /* কার্ড এবং অন্যান্য এলিমেন্টের ব্যাকগ্রাউন্ড */
+    --text-color: #e0e0e0; /* হালকা ধূসর টেক্সট */
+    --text-color-dark: #a0a0a0; /* কিছুটা গাঢ় টেক্সট */
+    --border-color: #333333;
+    --success-color: #4caf50;
+    --error-color: #f44336;
+    --font-family: 'Poppins', sans-serif;
+    --border-radius: 8px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* =================================
+   General Body & Reset Styles
+   ================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* =================================
+   Layout Structure (Mobile First)
+   ================================= */
+.container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.video-section {
+    position: sticky;
+    top: 1rem;
+    background-color: #000;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.playlist-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* =================================
+   Header & Support Banner
+   ================================= */
+.main-header {
+    background: var(--surface-color);
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.header-title {
+    font-size: 1.5rem;
+    color: var(--text-color);
+}
+
+.support-banner a {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.support-banner a:hover {
+    background-color: var(--primary-color-hover);
+}
+
+/* =================================
+   Controls: Search, Filter, Sort
+   ================================= */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1rem;
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+}
+
+.controls input,
+.controls select {
+    flex: 1 1 150px; /* Flexbox for responsiveness */
+    padding: 0.75rem;
+    background: var(--background-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+}
+
+.controls input:focus,
+.controls select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.view-toggle button {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    background-color: transparent;
+    color: var(--text-color-dark);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.view-toggle button:first-child {
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+    border-right: none;
+}
+.view-toggle button:last-child {
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+.view-toggle button.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* =================================
+   Video Player & Controls
+   ================================= */
+#video {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #000;
+    border-radius: var(--border-radius);
+}
+
+.navigation-controls, #qualitySelector {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+}
+
+.navigation-controls button, #qualitySelector button {
+    padding: 0.5rem 1rem;
+    background-color: var(--surface-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.navigation-controls button:hover, #qualitySelector button:hover {
+    background-color: var(--primary-color-hover);
+}
+
+/* =================================
+   Channel List (List & Grid View)
+   ================================= */
+#channelList {
+    background: var(--surface-color);
+    border-radius: var(--border-radius);
+    padding: 0.5rem;
+    height: 60vh; /* Default height */
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Scrollbar Styling */
+#channelList::-webkit-scrollbar {
+    width: 8px;
+}
+#channelList::-webkit-scrollbar-track {
+    background: var(--background-color);
+}
+#channelList::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+#channelList::-webkit-scrollbar-thumb:hover {
+    background: #777;
+}
+
+
+.channel {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    margin: 0.25rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    user-select: none; /* Long press selection 방지 */
+    -webkit-user-select: none;
+}
+
+.channel:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.02);
+}
+
+.channel.active {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 0 15px rgba(58, 123, 253, 0.5);
+}
+
+.channel img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    margin-right: 1rem;
+    border-radius: 50%;
+    background-color: #333;
+}
+
+.channel-name {
+    flex-grow: 1;
+    font-size: 1rem;
+}
+
+/* Grid View Specific Styles */
+#channelList.grid-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1rem;
+}
+
+#channelList.grid-view .channel {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
+}
+
+#channelList.grid-view .channel img {
+    margin: 0 0 0.5rem 0;
+    width: 60px;
+    height: 60px;
+}
+
+/* =================================
+   Loading Spinner & Notifications
+   ================================= */
+#loadingSpinner {
+    border: 5px solid var(--border-color);
+    border-top: 5px solid var(--primary-color);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.hidden {
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#toastNotification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--success-color);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s, visibility 0.5s;
+}
+
+#toastNotification.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* =================================
+   Footer & Other Information
+   ================================= */
+.zoom-instruction, .footer-text {
+    text-align: center;
+    color: var(--text-color-dark);
+    font-size: 0.9rem;
+    padding: 1rem 0;
+}
+
+.social-links {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.social-links a {
+    color: var(--text-color-dark);
+    font-size: 1.5rem;
+    margin: 0 0.75rem;
+    transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+    color: var(--primary-color);
+}
+
+.contact-section {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.contact-btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+}
+
+.contact-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* =================================
+   Desktop & Tablet Layout (Responsive)
+   ================================= */
+@media (min-width: 1024px) {
+    body {
+        /* মূল কন্টেন্টকে একটি সিঙ্গেল স্ক্রিনে রাখার জন্য */
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .main-header {
+        flex-shrink: 0; /* হেডার যেন ছোট না হয় */
+    }
+
+    .container {
+        flex-direction: row;
+        gap: 1.5rem;
+        height: calc(100vh - 70px); /* Header height বাদ দিয়ে */
+    }
+    
+    .video-section {
+        flex: 2; /* ভিডিও সেকশনকে বেশি জায়গা দেওয়া হলো */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start; /* কন্টেন্ট উপরে থাকবে */
+        max-height: 100%;
+    }
+
+    .playlist-section {
+        flex: 1; /* প্লেলিস্ট সেকশনকে কম জায়গা দেওয়া হলো */
+        max-height: 100%;
+        min-width: 350px;
+    }
+
+    #channelList {
+        flex-grow: 1; /* বাকি সব জায়গা নিয়ে নিবে */
+        height: auto; /* ফ্লেক্সবক্সের কারণে অটোমেটিক উচ্চতা পাবে */
+    }
+
+    /* Footer elements at bottom */
+    .footer-container {
+        position: absolute;
+        bottom: 1rem;
+        left: 0;
+        right: 0;
+    }
+}
