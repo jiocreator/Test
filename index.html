@@ -5,23 +5,42 @@
     <title>World of Streaming</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="style.css" />
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0N7L9GX4Z3"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-0N7L9GX4Z3');
+    </script>
 </head>
 <body>
+    <div id="ad-gate-overlay" style="display: none;"> <div class="ad-gate-box">
+            <h2>Unlock Content</h2>
+            <p>Please click the button below and wait for 10 seconds on the new page to unlock the player.</p>
+            <button id="unlockButton">Click to Unlock</button>
+        </div>
+    </div>
 
     <div class="app-container">
+        <header class="main-header">
+            <div class="header-title-container">
+                <h1 class="header-title">Welcome Back</h1>
+            </div>
+            <div class="support-banner">
+                <a href="https://www.profitableratecpm.com/yrygzszmx?key=b43ea4afe6263aed815797a0ebb4f75d" target="_blank" rel="noopener noreferrer">
+                    Click here to Support ❤️
+                </a>
+            </div>
+        </header>
+
         <div class="top-section">
-            <header class="main-header">
-                <div class="header-title-container">
-                    <span class="header-icon"></span>
-                    <h1 class="header-title">World of Streaming</h1>
-                </div>
-            </header>
             <video id="video" controls autoplay></video>
             <div class="navigation-controls">
-                <button id="prevBtn">⏮️ Previous</button>
-                <button id="nextBtn">Next ⏭️</button>
+                <button id="prevBtn">Previous</button>
+                <button id="nextBtn">Next</button>
             </div>
             <div id="qualitySelector"></div>
             <div class="controls">
@@ -45,6 +64,9 @@
         <div id="channelList" class="list-view"></div>
         <div id="loadingSpinner" class="hidden"></div>
     </div>
+    
+    <div class="footer-wrapper">
+        </div>
 
     <div id="toastNotification"></div>
     <script src="script.js"></script>
