@@ -12,7 +12,6 @@
 <body>
     <header class="main-header">
         <div class="header-title-container">
-            
             <h1 class="header-title">Welcome Back</h1>
         </div>
         <div class="support-banner">
@@ -22,49 +21,52 @@
         </div>
     </header>
 
-    <div class="controls">
-        <input type="text" id="search" placeholder="Search..." />
-        <select id="categoryFilter">
-            <option value="">All Categories</option>
-        </select>
-        <select id="sortSelector">
-            <option value="default">Default</option>
-            <option value="newest">Newest</option>
-            <option value="az">Name (A-Z)</option>
-            <option value="za">Name (Z-A)</option>
-        </select>
-        <div class="view-toggle">
-            <button id="listViewBtn" class="active">List</button>
-            <button id="gridViewBtn">Grid</button>
+    <div class="video-section-wrapper">
+        <video id="video" controls autoplay></video>
+        <div class="navigation-controls">
+            <button id="prevBtn">Previous</button>
+            <button id="nextBtn">Next</button>
+        </div>
+        <div id="qualitySelector"></div>
+    </div>
+
+    <div class="playlist-section-wrapper">
+        <div class="controls">
+            <input type="text" id="search" placeholder="Search..." />
+            <select id="categoryFilter">
+                <option value="">All Categories</option>
+            </select>
+            <select id="sortSelector">
+                <option value="default">Default</option>
+                <option value="newest">Newest</option>
+                <option value="az">Name (A-Z)</option>
+                <option value="za">Name (Z-A)</option>
+            </select>
+            <div class="view-toggle">
+                <button id="listViewBtn" class="active">List</button>
+                <button id="gridViewBtn">Grid</button>
+            </div>
+        </div>
+        <div id="channelList" class="list-view"></div>
+        <div id="loadingSpinner" class="hidden"></div>
+    </div>
+    
+    <div class="footer-wrapper">
+        <p class="zoom-instruction">
+            For the best experience, please set your Chrome browser zoom to 70-80% from Settings > Accessibility.
+        </p>
+        <p class="footer-text">© <span id="currentYear"></span> . All Rights Reserved.</p>
+        <div class="social-links">
+            <a href="https://t.me/mhd_piyash" target="_blank" title="Telegram"><i class="fab fa-telegram"></i></a>
+            <a href="https://facebook.com/mhd.piyash42" target="_blank" title="Facebook"><i class="fab fa-facebook"></i></a>
+            <a href="https://instagram.com/your_username" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+        </div>
+        <div class="contact-section">
+          <a href="http://forms.gle/EuBBS6R6jGxXTAaNA" target="_blank" class="contact-btn">Contact Us</a>
         </div>
     </div>
 
-    <video id="video" controls autoplay></video>
-
-    <div class="navigation-controls">
-        <button id="prevBtn">Previous</button>
-        <button id="nextBtn">Next</button>
-    </div>
-
-    <div id="qualitySelector"></div>
-
-    <div id="channelList" class="list-view"></div>
-  <div id="loadingSpinner" class="hidden"></div>
-
-  <p class="zoom-instruction">
-    For the best experience, please set your Chrome browser zoom to 70-80% from Settings > Accessibility.
-  </p>
-  
-  <p class="footer-text">© <span id="currentYear"></span> . All Rights Reserved.</p>
-<div class="social-links">
-    <a href="https://t.me/mhd_piyash" target="_blank" title="Telegram"><i class="fab fa-telegram"></i></a>
-    <a href="https://facebook.com/mhd.piyash42" target="_blank" title="Facebook"><i class="fab fa-facebook"></i></a>
-    <a href="https://instagram.com/your_username" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
-            </div>
-    <div class="contact-section">
-      <a href="http://forms.gle/EuBBS6R6jGxXTAaNA" target="_blank" class="contact-btn">Contact Us</a>
-  </div>
-  <div id="toastNotification"></div>
-  <script src="script.js"></script>
+    <div id="toastNotification"></div>
+    <script src="script.js"></script>
 </body>
 </html>
