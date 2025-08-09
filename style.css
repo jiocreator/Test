@@ -38,7 +38,7 @@ video { width: 100%; max-width: 720px; background: #000; border-radius: 10px; ma
 /* Channel Item Base Style */
 .channel { background-color: #1e1e1e; border-radius: 6px; cursor: pointer; position: relative; border: 2px solid transparent; margin: 5px; transition: transform 0.2s, border-color 0.2s; }
 .channel:hover { transform: scale(1.05); }
-.channel.active { border-color: lime; }
+.channel.active { border-color: yellow; }
 .channel img { border-radius: 6px; background: #333; }
 
 /* List View */
